@@ -1,0 +1,15 @@
+name = "open_linalg"
+version = "0.1.0"
+license = "MIT"
+author = "zoziha"
+maintainer = "zuo.zhihua@qq.com"
+copyright = "Copyright 2022, zoziha"
+
+[build]
+auto-executables = false
+auto-tests = false
+auto-examples = true
+link = ["openblas"]
+
+[install]
+library = true
