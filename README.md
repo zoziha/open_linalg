@@ -5,7 +5,7 @@ A collection of commonly used functions for linear algebra for Fortran using [Op
 *Suggestions and code contributions are welcome.*
 
 ```fortran
-use open_linalg_m, only: cross => cross_product, det, inv, matmul, operator(.i.), operator(.x.), solve
+use open_linalg_m, only: cross_product, det, inv, matmul, operator(.i.), operator(.x.), solve
 ```
 
 ## Build with [fortran-lang/fpm](https://github.com/fortran-lang/fpm)

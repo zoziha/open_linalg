@@ -287,15 +287,18 @@ contains
     function matmul_sp(a, b) result(c)
     !! matrix multiplication of single precision matrices
         real(sp), intent(in) :: a(:, :), b(:, :)
+        integer m, n, k
         real(sp) c(size(a, 1), size(b, 2))
 
+        m = size(a, 1)
+        n = size(b, 2)
+        k = size(a, 2)
         ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
         call sgemm( &
-            'n', 'n', &
-            size(a, 1), size(b, 2), size(a, 2), &
-            1.0_sp, a, size(a, 1), b, size(b, 1), &
-            0.0_sp, c, size(a, 1) &
-            )
+            'N', 'N', &
+            m, n, k, &
+            1.0_sp, a, m, b, k, &
+            0.0_sp, c, m)
 
     end function matmul_sp
 
@@ -303,14 +306,17 @@ contains
     !! matrix multiplication of double precision matrices
         real(dp), intent(in) :: a(:, :), b(:, :)
         real(dp) c(size(a, 1), size(b, 2))
+        integer m, n, k
 
+        m = size(a, 1)
+        n = size(b, 2)
+        k = size(a, 2)
         ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
         call dgemm( &
-            'n', 'n', &
-            size(a, 1), size(b, 2), size(a, 2), &
-            1.0_dp, a, size(a, 1), b, size(b, 1), &
-            0.0_dp, c, size(a, 1) &
-            )
+            'N', 'N', &
+            m, n, k, &
+            1.0_dp, a, m, b, k, &
+            0.0_dp, c, m)
 
     end function matmul_dp
 
@@ -318,14 +324,17 @@ contains
     !! matrix multiplication of single precision complex matrices
         complex(sp), intent(in) :: a(:, :), b(:, :)
         complex(sp) c(size(a, 1), size(b, 2))
+        integer m, n, k
 
+        m = size(a, 1)
+        n = size(b, 2)
+        k = size(a, 2)
         ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
         call cgemm( &
-            'n', 'n', &
-            size(a, 1), size(b, 2), size(a, 2), &
-            1.0_sp, a, size(a, 1), b, size(b, 1), &
-            0.0_sp, c, size(a, 1) &
-            )
+            'N', 'N', &
+            m, n, k, &
+            (1.0_sp, 0.0_sp), a, m, b, k, &
+            (0.0_sp, 0.0_sp), c, m)
 
     end function cmatmul_sp
 
@@ -333,79 +342,94 @@ contains
     !! matrix multiplication of double precision complex matrices
         complex(dp), intent(in) :: a(:, :), b(:, :)
         complex(dp) c(size(a, 1), size(b, 2))
+        integer m, n, k
 
+        m = size(a, 1)
+        n = size(b, 2)
+        k = size(a, 2)
         ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
         call zgemm( &
-            'n', 'n', &
-            size(a, 1), size(b, 2), size(a, 2), &
-            1.0_dp, a, size(a, 1), b, size(b, 1), &
-            0.0_dp, c, size(a, 1) &
-            )
+            'N', 'N', &
+            m, n, k, &
+            (1.0_dp, 0.0_dp), a, m, b, k, &
+            (0.0_dp, 0.0_dp), c, m)
 
     end function cmatmul_dp
 
-    function crmatmul_sp(a, b) result(c)
+    function rcmatmul_sp(a, b) result(c)
     !! matrix multiplication of single precision complex matrices
         real(sp), intent(in) :: a(:, :)
         complex(sp), intent(in) :: b(:, :)
         complex(sp) c(size(a, 1), size(b, 2))
+        integer m, n, k
 
+        m = size(a, 1)
+        n = size(b, 2)
+        k = size(a, 2)
         ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
         call cgemm( &
-            'n', 'n', &
-            size(a, 1), size(b, 2), size(a, 2), &
-            1.0_sp, cmplx(a, kind=sp), size(a, 1), b, size(b, 1), &
-            0.0_sp, c, size(a, 1) &
-            )
-
-    end function crmatmul_sp
-
-    function crmatmul_dp(a, b) result(c)
-    !! matrix multiplication of double precision complex matrices
-        real(dp), intent(in) :: a(:, :)
-        complex(dp), intent(in) :: b(:, :)
-        complex(dp) c(size(a, 1), size(b, 2))
-
-        ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
-        call zgemm( &
-            'n', 'n', &
-            size(a, 1), size(b, 2), size(a, 2), &
-            1.0_dp, cmplx(a, kind=dp), size(a, 1), b, size(b, 1), &
-            0.0_dp, c, size(a, 1) &
-            )
-
-    end function crmatmul_dp
-
-    function rcmatmul_sp(a, b) result(c)
-    !! matrix multiplication of single precision complex matrices
-        complex(sp), intent(in) :: a(:, :)
-        real(sp), intent(in) :: b(:, :)
-        complex(sp) c(size(a, 1), size(b, 2))
-
-        ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
-        call cgemm( &
-            'n', 'n', &
-            size(a, 1), size(b, 2), size(a, 2), &
-            1.0_sp, a, size(a, 1), cmplx(b, kind=sp), size(b, 1), &
-            0.0_sp, c, size(a, 1) &
-            )
+            'N', 'N', &
+            m, n, k, &
+            (1.0_sp, 0.0_sp), cmplx(a, kind=sp), m, b, k, &
+            (0.0_sp, 0.0_sp), c, m)
 
     end function rcmatmul_sp
 
     function rcmatmul_dp(a, b) result(c)
     !! matrix multiplication of double precision complex matrices
+        real(dp), intent(in) :: a(:, :)
+        complex(dp), intent(in) :: b(:, :)
+        complex(dp) c(size(a, 1), size(b, 2))
+        integer m, n, k
+
+        m = size(a, 1)
+        n = size(b, 2)
+        k = size(a, 2)
+        ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
+        call zgemm( &
+            'N', 'N', &
+            m, n, k, &
+            (1.0_dp, 0.0_dp), cmplx(a, kind=dp), m, b, k, &
+            (0.0_dp, 0.0_dp), c, m)
+
+    end function rcmatmul_dp
+
+    function crmatmul_sp(a, b) result(c)
+    !! matrix multiplication of single precision complex matrices
+        complex(sp), intent(in) :: a(:, :)
+        real(sp), intent(in) :: b(:, :)
+        complex(sp) c(size(a, 1), size(b, 2))
+        integer m, n, k
+
+        m = size(a, 1)
+        n = size(b, 2)
+        k = size(a, 2)
+        ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
+        call cgemm( &
+            'N', 'N', &
+            m, n, k, &
+            (1.0_sp, 0.0_sp), a, m, cmplx(b, kind=sp), k, &
+            (0.0_sp, 0.0_sp), c, m)
+
+    end function crmatmul_sp
+
+    function crmatmul_dp(a, b) result(c)
+    !! matrix multiplication of double precision complex matrices
         complex(dp), intent(in) :: a(:, :)
         real(dp), intent(in) :: b(:, :)
         complex(dp) c(size(a, 1), size(b, 2))
+        integer m, n, k
 
+        m = size(a, 1)
+        n = size(b, 2)
+        k = size(a, 2)
         ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
         call zgemm( &
-            'n', 'n', &
-            size(a, 1), size(b, 2), size(a, 2), &
-            1.0_dp, a, size(a, 1), cmplx(b, kind=dp), size(b, 1), &
-            0.0_dp, c, size(a, 1) &
-            )
+            'N', 'N', &
+            m, n, k, &
+            (1.0_dp, 0.0_dp), a, m, cmplx(b, kind=dp), k, &
+            (0.0_dp, 0.0_dp), c, m)
 
-    end function rcmatmul_dp
+    end function crmatmul_dp
 
 end module open_linalg_m
