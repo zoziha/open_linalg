@@ -7,11 +7,13 @@ module open_linalg_m
     public :: cross_product, det, inv, matmul, operator(.i.), operator(.x.), solve
 
     interface operator(.x.)
-        module procedure matmul_sp, matmul_dp
+        module procedure matmul_sp, matmul_dp, cmatmul_sp, cmatmul_dp, &
+            rcmatmul_sp, rcmatmul_dp, crmatmul_sp, crmatmul_dp
     end interface
 
     interface matmul
-        module procedure matmul_sp, matmul_dp
+        module procedure matmul_sp, matmul_dp, cmatmul_sp, cmatmul_dp, &
+            rcmatmul_sp, rcmatmul_dp, crmatmul_sp, crmatmul_dp
     end interface matmul
 
     interface det
@@ -19,7 +21,7 @@ module open_linalg_m
     end interface det
 
     interface operator(.i.)
-        module procedure inv_sp, inv_dp
+        module procedure inv_sp, inv_dp, cinv_sp, cinv_dp
     end interface
 
     interface inv
@@ -117,6 +119,66 @@ contains
         end if
 
     end function inv_dp
+
+    function cinv_sp(a) result(b)
+    !! calculate inverse of a single precision matrix
+        complex(sp), intent(in) :: a(:, :)
+        complex(sp) b(size(a, 2), size(a, 1))
+        integer ipiv(size(a, 1)), info
+        complex(sp) work(size(a, 2))
+
+        b = a
+        ! http://www.netlib.org/lapack/explore-html/d8/ddc/group__real_g_ecomputational_ga8d99c11b94db3d5eac75cac46a0f2e17.html
+        call cgetrf(size(a, 1), size(a, 2), b, size(a, 1), ipiv, info)
+        if (info < 0) then
+            write (stderr, *) 'cgetrf: illegal value in argument ', info
+            error stop
+        else if (info > 0) then
+            write (stderr, *) 'cgetrf: singular matrix, U(i,i) is exactly zero, info = ', info
+            error stop
+        end if
+
+        ! http://www.netlib.org/lapack/explore-html/d8/ddc/group__real_g_ecomputational_ga1af62182327d0be67b1717db399d7d83.html
+        call cgetri(size(a, 2), b, size(a, 1), ipiv, work, size(a, 2), info)
+        if (info < 0) then
+            write (stderr, *) 'cgetri: illegal value in argument ', info
+            error stop
+        else if (info > 0) then
+            write (stderr, *) 'cgetri: singular matrix, U(i,i) is exactly zero, info = ', info
+            error stop
+        end if
+
+    end function cinv_sp
+
+    function cinv_dp(a) result(b)
+    !! calculate inverse of a double precision matrix
+        complex(dp), intent(in) :: a(:, :)
+        complex(dp) b(size(a, 2), size(a, 1))
+        integer ipiv(size(a, 1)), info
+        complex(dp) work(size(a, 2))
+
+        b = a
+        ! http://www.netlib.org/lapack/explore-html/d8/ddc/group__real_g_ecomputational_ga8d99c11b94db3d5eac75cac46a0f2e17.html
+        call zgetrf(size(a, 1), size(a, 2), b, size(a, 1), ipiv, info)
+        if (info < 0) then
+            write (stderr, *) 'zgetrf: illegal value in argument ', info
+            error stop
+        else if (info > 0) then
+            write (stderr, *) 'zgetrf: singular matrix, U(i,i) is exactly zero, info = ', info
+            error stop
+        end if
+
+        ! http://www.netlib.org/lapack/explore-html/d8/ddc/group__real_g_ecomputational_ga1af62182327d0be67b1717db399d7d83.html
+        call zgetri(size(a, 2), b, size(a, 1), ipiv, work, size(a, 2), info)
+        if (info < 0) then
+            write (stderr, *) 'zgetri: illegal value in argument ', info
+            error stop
+        else if (info > 0) then
+            write (stderr, *) 'zgetri: singular matrix, U(i,i) is exactly zero, info = ', info
+            error stop
+        end if
+
+    end function cinv_dp
 
     function solve_sp(a, b) result(x)
     !! solve linear system of single precision
@@ -251,5 +313,99 @@ contains
             )
 
     end function matmul_dp
+
+    function cmatmul_sp(a, b) result(c)
+    !! matrix multiplication of single precision complex matrices
+        complex(sp), intent(in) :: a(:, :), b(:, :)
+        complex(sp) c(size(a, 1), size(b, 2))
+
+        ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
+        call cgemm( &
+            'n', 'n', &
+            size(a, 1), size(b, 2), size(a, 2), &
+            1.0_sp, a, size(a, 1), b, size(b, 1), &
+            0.0_sp, c, size(a, 1) &
+            )
+
+    end function cmatmul_sp
+
+    function cmatmul_dp(a, b) result(c)
+    !! matrix multiplication of double precision complex matrices
+        complex(dp), intent(in) :: a(:, :), b(:, :)
+        complex(dp) c(size(a, 1), size(b, 2))
+
+        ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
+        call zgemm( &
+            'n', 'n', &
+            size(a, 1), size(b, 2), size(a, 2), &
+            1.0_dp, a, size(a, 1), b, size(b, 1), &
+            0.0_dp, c, size(a, 1) &
+            )
+
+    end function cmatmul_dp
+
+    function crmatmul_sp(a, b) result(c)
+    !! matrix multiplication of single precision complex matrices
+        real(sp), intent(in) :: a(:, :)
+        complex(sp), intent(in) :: b(:, :)
+        complex(sp) c(size(a, 1), size(b, 2))
+
+        ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
+        call cgemm( &
+            'n', 'n', &
+            size(a, 1), size(b, 2), size(a, 2), &
+            1.0_sp, cmplx(a, kind=sp), size(a, 1), b, size(b, 1), &
+            0.0_sp, c, size(a, 1) &
+            )
+
+    end function crmatmul_sp
+
+    function crmatmul_dp(a, b) result(c)
+    !! matrix multiplication of double precision complex matrices
+        real(dp), intent(in) :: a(:, :)
+        complex(dp), intent(in) :: b(:, :)
+        complex(dp) c(size(a, 1), size(b, 2))
+
+        ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
+        call zgemm( &
+            'n', 'n', &
+            size(a, 1), size(b, 2), size(a, 2), &
+            1.0_dp, cmplx(a, kind=dp), size(a, 1), b, size(b, 1), &
+            0.0_dp, c, size(a, 1) &
+            )
+
+    end function crmatmul_dp
+
+    function rcmatmul_sp(a, b) result(c)
+    !! matrix multiplication of single precision complex matrices
+        complex(sp), intent(in) :: a(:, :)
+        real(sp), intent(in) :: b(:, :)
+        complex(sp) c(size(a, 1), size(b, 2))
+
+        ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
+        call cgemm( &
+            'n', 'n', &
+            size(a, 1), size(b, 2), size(a, 2), &
+            1.0_sp, a, size(a, 1), cmplx(b, kind=sp), size(b, 1), &
+            0.0_sp, c, size(a, 1) &
+            )
+
+    end function rcmatmul_sp
+
+    function rcmatmul_dp(a, b) result(c)
+    !! matrix multiplication of double precision complex matrices
+        complex(dp), intent(in) :: a(:, :)
+        real(dp), intent(in) :: b(:, :)
+        complex(dp) c(size(a, 1), size(b, 2))
+
+        ! http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html
+        call zgemm( &
+            'n', 'n', &
+            size(a, 1), size(b, 2), size(a, 2), &
+            1.0_dp, a, size(a, 1), cmplx(b, kind=dp), size(b, 1), &
+            0.0_dp, c, size(a, 1) &
+            )
+
+    end function rcmatmul_dp
 
 end module open_linalg_m
