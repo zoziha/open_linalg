@@ -4,7 +4,7 @@ module open_linalg_m
     implicit none
     private
 
-    public :: cross_product, det, inv, matmul, operator(.i.), operator(.x.), solve
+    public :: det, inv, matmul, operator(.i.), operator(.x.), solve
 
     interface operator(.x.)
         module procedure matmul_sp, matmul_dp, cmatmul_sp, cmatmul_dp, &
@@ -28,37 +28,11 @@ module open_linalg_m
         module procedure inv_sp, inv_dp
     end interface inv
 
-    interface cross_product
-        module procedure cross_product_sp, cross_product_dp
-    end interface cross_product
-
     interface solve
         module procedure solve_sp, solve_dp
     end interface solve
 
 contains
-
-    pure function cross_product_sp(a, b) result(c)
-    !! calculate single precision cross product
-        real(sp), intent(in) :: a(3), b(3)
-        real(sp) c(3)
-
-        c(1) = a(2)*b(3) - a(3)*b(2)
-        c(2) = a(3)*b(1) - a(1)*b(3)
-        c(3) = a(1)*b(2) - a(2)*b(1)
-
-    end function cross_product_sp
-
-    pure function cross_product_dp(a, b) result(c)
-    !! calculate double precision cross product
-        real(dp), intent(in) :: a(3), b(3)
-        real(dp) c(3)
-
-        c(1) = a(2)*b(3) - a(3)*b(2)
-        c(2) = a(3)*b(1) - a(1)*b(3)
-        c(3) = a(1)*b(2) - a(2)*b(1)
-
-    end function cross_product_dp
 
     function inv_sp(a) result(b)
     !! calculate inverse of a single precision matrix
