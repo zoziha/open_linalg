@@ -10,7 +10,7 @@ use open_linalg_m, only: det, inv, matmul, operator(.i.), operator(.x.), solve
 
 ## Build with [fortran-lang/fpm](https://github.com/fortran-lang/fpm)
 
-```
+```sh
 fpm run --example --list
 ```
 

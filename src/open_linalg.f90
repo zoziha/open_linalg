@@ -25,11 +25,11 @@ module open_linalg_m
     end interface
 
     interface inv
-        module procedure inv_sp, inv_dp
+        module procedure inv_sp, inv_dp, cinv_sp, cinv_dp
     end interface inv
 
     interface solve
-        module procedure solve_sp, solve_dp
+        module procedure solve_sp, solve_dp, csolve_sp, csolve_dp
     end interface solve
 
 contains
@@ -199,6 +199,52 @@ contains
         end if
 
     end function solve_dp
+    
+    function csolve_sp(a, b) result(x)
+    !! solve linear system of single precision
+        complex(sp), intent(in) :: a(:, :), b(:, :)
+        complex(sp) x(size(b, 1), size(b, 2))
+
+        complex(sp) a_(size(a, 1), size(a, 2))
+        integer ipiv(size(a, 1))
+        integer info
+
+        a_ = a; x = b
+        ! http://www.netlib.org/lapack/explore-html/d0/db8/group__real_g_esolve_ga3b05fb3999b3d7351cb3101a1fd28e78.html
+        call cgesv(size(a, 1), size(b, 2), a_, size(a, 1), ipiv, x, size(b, 1), info)
+
+        if (info < 0) then
+            write (stderr, *) 'cgesv: illegal value in argument ', info
+            error stop
+        else if (info > 0) then
+            write (stderr, *) 'cgesv: singular matrix, U(i,i) is exactly zero, info = ', info
+            error stop
+        end if
+
+    end function csolve_sp
+    
+    function csolve_dp(a, b) result(x)
+    !! solve linear system of double precision
+        complex(dp), intent(in) :: a(:, :), b(:, :)
+        complex(dp) x(size(b, 1), size(b, 2))
+
+        complex(dp) a_(size(a, 1), size(a, 2))
+        integer ipiv(size(a, 1))
+        integer info
+
+        a_ = a; x = b
+        ! http://www.netlib.org/lapack/explore-html/d7/d3b/group__double_g_esolve_ga5ee879032a8365897c3ba91e3dc8d512.html
+        call zgesv(size(a, 1), size(b, 2), a_, size(a, 1), ipiv, x, size(b, 1), info)
+
+        if (info < 0) then
+            write (stderr, *) 'zgesv: illegal value in argument ', info
+            error stop
+        else if (info > 0) then
+            write (stderr, *) 'zgesv: singular matrix, U(i,i) is exactly zero, info = ', info
+            error stop
+        end if
+
+    end function csolve_dp
 
     function det_sp(a) result(d)
     !! calculate determinant of a single precision matrix
